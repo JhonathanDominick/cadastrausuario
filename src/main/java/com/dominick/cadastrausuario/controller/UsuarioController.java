@@ -1,8 +1,9 @@
 package com.dominick.cadastrausuario.controller;
 
 import com.dominick.cadastrausuario.business.UsuarioService;
+import com.dominick.cadastrausuario.business.dto.EnderecoDTO;
+import com.dominick.cadastrausuario.business.dto.TelefoneDTO;
 import com.dominick.cadastrausuario.business.dto.UsuarioDTO;
-import com.dominick.cadastrausuario.infrastructure.entity.Usuario;
 import com.dominick.cadastrausuario.infrastructure.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -38,12 +39,10 @@ public class UsuarioController {
     }
 
     @GetMapping
-    public ResponseEntity<Usuario> buscaUsuarioPorEmail(
+    public ResponseEntity<UsuarioDTO> buscaUsuarioPorEmail(
             @RequestParam("email") String email){
 
-        return ResponseEntity.ok(
-                usuarioService.buscarUsuarioPorEmail(email)
-        );
+        return ResponseEntity.ok(usuarioService.buscarUsuarioPorEmail(email));
     }
 
     @DeleteMapping("/{email}")
@@ -61,6 +60,18 @@ public class UsuarioController {
 
         return ResponseEntity.ok(usuarioService.atualizaDadosUsuario(token, dto));
 
+    }
+
+    @PutMapping("/endereco")
+    public ResponseEntity<EnderecoDTO> atualizaEndereco(@RequestBody EnderecoDTO dto, @RequestParam("id") Long id){
+
+        return ResponseEntity.ok(usuarioService.atualizaEndereco(id, dto));
+    }
+
+    @PutMapping("/telefone")
+    public ResponseEntity<TelefoneDTO> atualizaTelefone(@RequestBody TelefoneDTO dto, @RequestParam("id") Long id){
+
+        return ResponseEntity.ok(usuarioService.atualizaTelefone(id, dto));
     }
 
 
