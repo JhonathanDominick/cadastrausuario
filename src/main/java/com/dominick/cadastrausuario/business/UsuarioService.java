@@ -74,7 +74,7 @@ public class UsuarioService {
         String email = jwtUtil.extrairEmailToken(token.substring(7));
 
         //criptografia de senha
-        dto.setSenha(dto.getSenha() != null ? passwordEncoder.encode(dto.getEmail()) : null);
+        dto.setSenha(dto.getSenha() != null ? passwordEncoder.encode(dto.getSenha()) : null);
 
         // Busca dados de usuario no banco de dados
         Usuario usuarioEntity = usuarioRepository.findByEmail(email).orElseThrow(() ->
