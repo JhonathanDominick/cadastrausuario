@@ -12,50 +12,61 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-// Define a classe JwtRequestFilter, que estende OncePerRequestFilter
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-    // Define propriedades para armazenar instâncias de JwtUtil e UserDetailsService
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
 
-    // Construtor que inicializa as propriedades com instâncias fornecidas
     public JwtRequestFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
     }
 
-    // Método chamado uma vez por requisição para processar o filtro
+    /**
+     * 🔥 MÉTODO CRÍTICO: Define quando o filtro NÃO deve executar
+     * Retorna TRUE = pula o filtro (não exige JWT)
+     */
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-            throws ServletException, IOException {
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
 
-        // Obtém o valor do header "Authorization" da requisição
+        // Rotas públicas que não precisam de autenticação
+        boolean isPublic =
+                path.equals("/usuario") ||                          // POST cadastro
+                        path.equals("/usuario/login") ||                    // POST login
+                        path.startsWith("/usuario/endereco/") ||           // GET CEP
+                        path.startsWith("/v3/api-docs/") ||
+                        path.startsWith("/swagger-ui/") ||
+                        path.equals("/swagger-ui.html");
+
+        System.out.println("🔍 JwtRequestFilter - Path: " + path + " | Skip: " + isPublic);
+
+        return isPublic;
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                    FilterChain chain) throws ServletException, IOException {
+
+        System.out.println("🔒 JwtRequestFilter - Processando autenticação para: " + request.getRequestURI());
+
         final String authorizationHeader = request.getHeader("Authorization");
 
-        // Verifica se o cabeçalho existe e começa com "Bearer "
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            // Extrai o token JWT do cabeçalho
             final String token = authorizationHeader.substring(7);
-            // Extrai o nome de usuário do token JWT
             final String username = jwtUtil.extrairEmailToken(token);
 
-            // Se o nome de usuário não for nulo e o usuário não estiver autenticado ainda
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // Carrega os detalhes do usuário a partir do nome de usuário
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                // Valida o token JWT
                 if (jwtUtil.validateToken(token, username)) {
-                    // Cria um objeto de autenticação com as informações do usuário
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                    // Define a autenticação no contexto de segurança
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails, null, userDetails.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }
         }
 
-        // Continua a cadeia de filtros, permitindo que a requisição prossiga
         chain.doFilter(request, response);
     }
 }
