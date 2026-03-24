@@ -1,9 +1,11 @@
 package com.dominick.cadastrausuario.controller;
 
 import com.dominick.cadastrausuario.business.UsuarioService;
+import com.dominick.cadastrausuario.business.ViaCepService;
 import com.dominick.cadastrausuario.business.dto.EnderecoDTO;
 import com.dominick.cadastrausuario.business.dto.TelefoneDTO;
 import com.dominick.cadastrausuario.business.dto.UsuarioDTO;
+import com.dominick.cadastrausuario.infrastructure.clients.ViaCepDTO;
 import com.dominick.cadastrausuario.infrastructure.security.JwtUtil;
 import com.dominick.cadastrausuario.infrastructure.security.SecurityConfig;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,6 +28,7 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final ViaCepService viaCepService;
 
     @PostMapping
     @Operation(summary = "Cadastrar usuario", description = "Cria um novo usuario no sistema")
@@ -133,5 +136,14 @@ public class UsuarioController {
                                                         @RequestHeader("Authorization") String token){
 
         return ResponseEntity.ok(usuarioService.cadastraTelefone(token, dto));
+    }
+
+    @GetMapping("/endereco/{cep}")
+    @Operation(summary = "Buscar endereço por CEP", description = "Consulta API Via CEP para obter dados do endereço")
+    @ApiResponse(responseCode = "200", description = "Endereço encontrado")
+    @ApiResponse(responseCode = "404", description = "CEP não encontrado")
+    @ApiResponse(responseCode = "500", description = "Erro de servidor")
+    public ResponseEntity<ViaCepDTO> buscarDadosCep(@PathVariable("cep") String cep){
+        return ResponseEntity.ok(viaCepService.buscarDadosEndereco(cep));
     }
 }
