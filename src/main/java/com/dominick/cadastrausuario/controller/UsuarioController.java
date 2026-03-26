@@ -139,10 +139,11 @@ public class UsuarioController {
     }
 
     @GetMapping("/endereco/{cep}")
+    @Operation(summary = "Buscar endereço por CEP", description = "Consulta API Via CEP para obter dados do endereço")
+    @ApiResponse(responseCode = "200", description = "Endereço encontrado")
+    @ApiResponse(responseCode = "404", description = "CEP não encontrado")
+    @ApiResponse(responseCode = "500", description = "Erro de servidor")
     public ResponseEntity<ViaCepDTO> buscarDadosCep(@PathVariable("cep") String cep){
         return ResponseEntity.ok(viaCepService.buscarDadosEndereco(cep));
-
     }
-
-
 }

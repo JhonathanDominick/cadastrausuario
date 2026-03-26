@@ -30,6 +30,4 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handlerIllegalArgumentException(IllegalArgumentException ex){
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
-
-
 }
